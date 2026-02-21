@@ -1,5 +1,5 @@
 {
-  "rewrite": [{ "source": "/(.*)", "destination": "/app/main.py" }],
+  "rewrites": [{ "source": "/(.*)", "destination": "/app/main.py" }],
   "functions": {
     "app/main.py": {
       "runtime": "vercel-python@0.0.1"
