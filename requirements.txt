@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+supabase
+python-dotenv
+pydantic-settings
+pydantic[email]
+python-multipart
+gotrue
+postgrest
+httpx
