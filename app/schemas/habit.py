@@ -15,6 +15,11 @@ class HabitCategoryBase(BaseModel):
     color: Optional[str] = None
     icon: Optional[str] = None
 
+class HabitCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    color: Optional[str] = None
+    icon: Optional[str] = None
+
 class HabitCategoryCreate(HabitCategoryBase):
     pass
 

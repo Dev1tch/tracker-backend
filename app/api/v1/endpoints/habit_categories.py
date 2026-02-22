@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from app.schemas.habit import HabitCategory, HabitCategoryCreate
+from app.schemas.habit import HabitCategory, HabitCategoryCreate, HabitCategoryUpdate
 from app.schemas.user import User
 from app.core.service_provider import ServiceProvider
 from app.services.category_service import CategoryService
@@ -48,3 +48,15 @@ def delete_category(
     if not success:
         raise HTTPException(status_code=404, detail="Category not found or could not be deleted")
     return {"status": "success"}
+
+@router.put("/{category_id}", response_model=HabitCategory)
+def update_category(
+    category_id: UUID,
+    category_update: HabitCategoryUpdate,
+    current_user: User = Depends(get_current_user),
+    service: CategoryService = Depends(ServiceProvider.get_category_service)
+):
+    updated_category = service.update(current_user.id, category_id, category_update)
+    if not updated_category:
+        raise HTTPException(status_code=404, detail="Category not found or could not be updated")
+    return updated_category
