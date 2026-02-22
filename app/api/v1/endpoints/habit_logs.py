@@ -26,10 +26,9 @@ def create_log(
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="You do not have permission to log for this habit"
         )
-    
     data = log_service.create(log)
     if not data:
-        raise HTTPException(status_code=400, detail="Could not create habit log")
+        raise HTTPException(status_code=400, detail="Could not create or update habit log")
     return data
 
 @router.get("/", response_model=List[HabitLog])

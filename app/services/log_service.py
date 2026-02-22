@@ -10,6 +10,21 @@ class LogService:
 
     def create(self, log_data: HabitLogCreate):
         # Habit ownership is checked in the router before calling this
+        # Check if log already exists for this date
+        existing = supabase.read(
+            self.table_name, 
+            filters={"habit_id": str(log_data.habit_id), "date": str(log_data.date)}
+        )
+        
+        if existing.data:
+            # Update the existing log instead of creating a new one
+            response = supabase.update(
+                self.table_name,
+                filters={"id": existing.data[0]["id"]},
+                data=log_data.model_dump(mode='json')
+            )
+            return response.data[0] if response.data else None
+            
         response = supabase.create(self.table_name, log_data.model_dump(mode='json'))
         return response.data[0] if response.data else None
 
