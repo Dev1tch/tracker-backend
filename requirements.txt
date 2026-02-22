@@ -8,3 +8,5 @@ python-multipart
 gotrue
 postgrest
 httpx
+bcrypt
+python-jose[cryptography]

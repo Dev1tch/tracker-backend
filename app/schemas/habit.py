@@ -20,6 +20,7 @@ class HabitCategoryCreate(HabitCategoryBase):
 
 class HabitCategory(HabitCategoryBase):
     id: UUID
+    user_id: UUID
     created_at: datetime
 
     class Config:
@@ -45,6 +46,7 @@ class HabitUpdate(BaseModel):
 
 class Habit(HabitBase):
     id: UUID
+    user_id: UUID
     created_at: datetime
     # We can include category details here if needed later via a flat or nested model
 

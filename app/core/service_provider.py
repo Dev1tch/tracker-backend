@@ -1,6 +1,7 @@
 from app.services.category_service import CategoryService
 from app.services.habit_service import HabitService
 from app.services.log_service import LogService
+from app.services.user_service import UserService
 
 class ServiceProvider:
     """Central factory for creating service instances."""
@@ -15,3 +16,7 @@ class ServiceProvider:
     @staticmethod
     def get_log_service() -> LogService:
         return LogService()
+
+    @staticmethod
+    def get_user_service() -> UserService:
+        return UserService()
