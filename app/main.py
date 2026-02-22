@@ -16,14 +16,8 @@ def health_check():
 app.include_router(root_router)
 
 # API V1 router to be populated with feature routers
-api_v1_router = APIRouter()
-
-# Example router inclusion pattern:
-# from app.api.v1 import tasks, habits
-# api_v1_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
-# api_v1_router.include_router(habits.router, prefix="/habits", tags=["habits"])
-
-app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+from app.api.v1.api import api_router
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":
     import uvicorn
