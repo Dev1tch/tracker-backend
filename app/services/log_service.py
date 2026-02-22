@@ -44,7 +44,7 @@ class LogService:
 
     def get_logs_by_timeframe(self, user_id: UUID, start_date: date, end_date: date, habit_ids: Optional[List[UUID]] = None):
         # 1. Fetch habits for the user
-        habit_query = supabase.client.table("habits").select("*").eq("user_id", str(user_id))
+        habit_query = supabase.client.table("habits").select("*").eq("user_id", str(user_id)).eq("is_active", True)
         if habit_ids:
             str_habit_ids = [str(hid) for hid in habit_ids]
             habit_query = habit_query.in_("id", str_habit_ids)
