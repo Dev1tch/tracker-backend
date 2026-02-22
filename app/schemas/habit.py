@@ -74,3 +74,11 @@ class HabitLogUpdate(BaseModel):
     is_successful: Optional[bool] = None
     comment: Optional[str] = None
     date: Optional[date] = None
+
+class TimeframeLogRequest(BaseModel):
+    start_date: date
+    end_date: date
+    habit_ids: Optional[List[UUID]] = None
+
+class HabitWithLogs(Habit):
+    logs: List[HabitLog] = []

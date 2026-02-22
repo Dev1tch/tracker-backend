@@ -27,6 +27,37 @@ class LogService:
         response = query.execute()
         return response.data
 
+    def get_logs_by_timeframe(self, user_id: UUID, start_date: date, end_date: date, habit_ids: Optional[List[UUID]] = None):
+        # 1. Fetch habits for the user
+        habit_query = supabase.client.table("habits").select("*").eq("user_id", str(user_id))
+        if habit_ids:
+            str_habit_ids = [str(hid) for hid in habit_ids]
+            habit_query = habit_query.in_("id", str_habit_ids)
+        habits = habit_query.execute().data
+
+        if not habits:
+            return []
+
+        # 2. Fetch logs for these habits in the timeframe
+        fetched_habit_ids = [h["id"] for h in habits]
+        log_query = supabase.client.table(self.table_name).select("*")
+        log_query = log_query.in_("habit_id", fetched_habit_ids)
+        log_query = log_query.gte("date", str(start_date))
+        log_query = log_query.lte("date", str(end_date))
+        logs = log_query.execute().data
+
+        # 3. Group logs by habit_id
+        from collections import defaultdict
+        logs_by_habit = defaultdict(list)
+        for log in logs:
+            logs_by_habit[log["habit_id"]].append(log)
+
+        # 4. Attach logs to habits
+        for habit in habits:
+            habit["logs"] = logs_by_habit.get(habit["id"], [])
+            
+        return habits
+
     def update(self, log_id: UUID, log_update: HabitLogUpdate):
         # Ownership check is done in the router
         response = supabase.update(

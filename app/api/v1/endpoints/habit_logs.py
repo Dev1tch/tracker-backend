@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from typing import List, Optional
-from app.schemas.habit import HabitLog, HabitLogCreate, HabitLogUpdate
+from typing import List, Optional, Dict
+from collections import defaultdict
+from app.schemas.habit import HabitLog, HabitLogCreate, HabitLogUpdate, TimeframeLogRequest, HabitWithLogs
 from app.schemas.user import User
 from app.core.service_provider import ServiceProvider
 from app.services.log_service import LogService
@@ -39,6 +40,23 @@ def get_logs(
     log_service: LogService = Depends(ServiceProvider.get_log_service)
 ):
     return log_service.get_logs(current_user.id, habit_id=habit_id, day=day)
+
+@router.post("/timeframe", response_model=List[HabitWithLogs])
+def get_logs_by_timeframe(
+    request: TimeframeLogRequest,
+    current_user: User = Depends(get_current_user),
+    log_service: LogService = Depends(ServiceProvider.get_log_service)
+):
+    """
+    Fetch habits and their logs within a specific date range. 
+    Optionally filter by a list of habit_ids.
+    """
+    return log_service.get_logs_by_timeframe(
+        user_id=current_user.id,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        habit_ids=request.habit_ids
+    )
 
 @router.patch("/{log_id}", response_model=HabitLog)
 def update_log(
