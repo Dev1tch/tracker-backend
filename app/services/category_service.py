@@ -1,32 +1,31 @@
-from app.schemas.habit import HabitCategoryUpdate
-from typing import List, Optional
 from uuid import UUID
-from app.core.supabase_client import supabase
+from app.core.supabase_client import SupabaseClient
 from app.schemas.habit import HabitCategoryCreate, HabitCategoryUpdate
 
 class CategoryService:
-    def __init__(self):
+    def __init__(self, db: SupabaseClient):
+        self.db = db
         self.table_name = "habit_categories"
 
     def create(self, user_id: UUID, category_data: HabitCategoryCreate):
         data = category_data.model_dump(mode='json')
         data["user_id"] = str(user_id)
-        response = supabase.create(self.table_name, data)
+        response = self.db.create(self.table_name, data)
         return response.data[0] if response.data else None
 
     def get_all(self, user_id: UUID):
-        response = supabase.read(self.table_name, filters={"user_id": str(user_id)})
+        response = self.db.read(self.table_name, filters={"user_id": str(user_id)})
         return response.data
 
     def get_by_id(self, user_id: UUID, category_id: UUID):
-        response = supabase.read(
+        response = self.db.read(
             self.table_name, 
             filters={"id": str(category_id), "user_id": str(user_id)}
         )
         return response.data[0] if response.data else None
 
     def delete(self, user_id: UUID, category_id: UUID):
-        response = supabase.delete(
+        response = self.db.delete(
             self.table_name, 
             filters={"id": str(category_id), "user_id": str(user_id)}
         )
@@ -37,7 +36,7 @@ class CategoryService:
         if not data:
             return self.get_by_id(user_id, category_id)
             
-        response = supabase.update(
+        response = self.db.update(
             self.table_name,
             filters={"id": str(category_id), "user_id": str(user_id)},
             data=data

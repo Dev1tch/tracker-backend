@@ -1,16 +1,17 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
-from app.core.supabase_client import supabase
+from app.core.supabase_client import SupabaseClient
 from app.schemas.habit import HabitCreate, HabitUpdate
 
 class HabitService:
-    def __init__(self):
+    def __init__(self, db: SupabaseClient):
+        self.db = db
         self.table_name = "habits"
 
     def create(self, user_id: UUID, habit_data: HabitCreate):
         data = habit_data.model_dump(mode='json')
         data["user_id"] = str(user_id)
-        response = supabase.create(self.table_name, data)
+        response = self.db.create(self.table_name, data)
         return response.data[0] if response.data else None
 
     def get_habits(self, user_id: UUID, category_id: Optional[UUID] = None, is_active: Optional[bool] = None):
@@ -19,18 +20,18 @@ class HabitService:
             filters["category_id"] = str(category_id)
         if is_active is not None:
             filters["is_active"] = is_active
-        response = supabase.read(self.table_name, filters=filters)
+        response = self.db.read(self.table_name, filters=filters)
         return response.data
 
     def get_by_id(self, user_id: UUID, habit_id: UUID):
-        response = supabase.read(
+        response = self.db.read(
             self.table_name, 
             filters={"id": str(habit_id), "user_id": str(user_id)}
         )
         return response.data[0] if response.data else None
 
     def update(self, user_id: UUID, habit_id: UUID, habit_update: HabitUpdate):
-        response = supabase.update(
+        response = self.db.update(
             self.table_name, 
             filters={"id": str(habit_id), "user_id": str(user_id)}, 
             data=habit_update.model_dump(mode='json', exclude_unset=True)
@@ -38,7 +39,7 @@ class HabitService:
         return response.data[0] if response.data else None
 
     def delete(self, user_id: UUID, habit_id: UUID):
-        response = supabase.delete(
+        response = self.db.delete(
             self.table_name, 
             filters={"id": str(habit_id), "user_id": str(user_id)}
         )

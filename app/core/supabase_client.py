@@ -3,8 +3,10 @@ from supabase import create_client, Client
 from app.core.config import settings
 
 class SupabaseClient:
-    def __init__(self):
-        self.client: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+    def __init__(self, client: Optional[Client] = None):
+        self.client: Client = client or create_client(
+            settings.SUPABASE_URL, settings.SUPABASE_KEY
+        )
 
     def table(self, table_name: str):
         """Returns a query builder for the specified table."""
@@ -56,6 +58,3 @@ class SupabaseClient:
     def rpc(self, fn_name: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """Call a Postgres function/RPC."""
         return self.client.rpc(fn_name, params or {}).execute()
-
-# Global instance
-supabase = SupabaseClient()

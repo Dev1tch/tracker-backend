@@ -1,11 +1,11 @@
-from typing import Optional
-from app.core.supabase_client import supabase
+from app.core.supabase_client import SupabaseClient
 from app.core.security import get_password_hash, verify_password
 from app.schemas.user import UserCreate, UserLogin
 from uuid import UUID
 
 class UserService:
-    def __init__(self):
+    def __init__(self, db: SupabaseClient):
+        self.db = db
         self.table_name = "users"
 
     def create(self, user_in: UserCreate):
@@ -14,12 +14,12 @@ class UserService:
         password = user_data.pop("password")
         user_data["password_hash"] = get_password_hash(password)
         
-        response = supabase.create(self.table_name, user_data)
+        response = self.db.create(self.table_name, user_data)
         return response.data[0] if response.data else None
 
     def get_by_email(self, email: str):
         """Get a user by email."""
-        response = supabase.read(self.table_name, filters={"email": email.lower()})
+        response = self.db.read(self.table_name, filters={"email": email.lower()})
         return response.data[0] if response.data else None
 
     def authenticate(self, login_data: UserLogin):
@@ -33,5 +33,5 @@ class UserService:
 
     def get_by_id(self, user_id: UUID):
         """Get a user by ID."""
-        response = supabase.read(self.table_name, filters={"id": str(user_id)})
+        response = self.db.read(self.table_name, filters={"id": str(user_id)})
         return response.data[0] if response.data else None
