@@ -181,8 +181,9 @@ class TaskService:
 
         if "status" in data and data["status"] is not None:
             new_status = TaskOrganizationStatus(data["status"])
-            status_updates = self._build_status_updates(current, new_status)
-            data.update(status_updates)
+            if new_status.value != current.get("status"):
+                status_updates = self._build_status_updates(current, new_status)
+                data.update(status_updates)
 
         data["updated_at"] = self._now_iso()
 
@@ -269,6 +270,9 @@ class TaskService:
             if not task:
                 continue
 
+            if new_status.value == task.get("status"):
+                continue
+
             updates = self._build_status_updates(task, new_status)
             updates["updated_at"] = self._now_iso()
 
@@ -292,6 +296,9 @@ class TaskService:
             for subtask in subtasks_response.data:
                 subtask_id = subtask["id"]
                 if subtask_id in processed_ids:
+                    continue
+
+                if new_status.value == subtask.get("status"):
                     continue
 
                 subtask_updates = self._build_status_updates(subtask, new_status)
