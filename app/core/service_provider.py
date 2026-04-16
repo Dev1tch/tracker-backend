@@ -1,8 +1,11 @@
+from app.core.config import settings
 from app.core.supabase_client import SupabaseClient
 from app.services.category_service import CategoryService
+from app.services.email import BrevoEmailSender, EmailSender
 from app.services.habit_service import HabitService
 from app.services.log_service import LogService
 from app.services.task_service import TaskService
+from app.services.user_notification_service import UserNotificationService
 from app.services.user_service import UserService
 
 
@@ -10,6 +13,9 @@ class ServiceProvider:
     """Central factory for creating service instances."""
 
     _supabase_client = SupabaseClient()
+    _email_sender: EmailSender = BrevoEmailSender(
+        api_key=settings.BREVO_EMAIL_SENDER_API_KEY
+    )
 
     @staticmethod
     def get_supabase_client() -> SupabaseClient:
@@ -34,3 +40,15 @@ class ServiceProvider:
     @staticmethod
     def get_user_service() -> UserService:
         return UserService(ServiceProvider.get_supabase_client())
+
+    @staticmethod
+    def get_email_sender() -> EmailSender:
+        return ServiceProvider._email_sender
+
+    @staticmethod
+    def get_user_notification_service() -> UserNotificationService:
+        return UserNotificationService(
+            email_sender=ServiceProvider.get_email_sender(),
+            sender_name=settings.EMAIL_SENDER_NAME,
+            sender_email=settings.EMAIL_SENDER_EMAIL,
+        )

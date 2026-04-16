@@ -10,3 +10,4 @@ postgrest
 httpx
 bcrypt
 python-jose[cryptography]
+sib-api-v3-sdk

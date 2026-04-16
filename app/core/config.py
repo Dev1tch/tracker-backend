@@ -13,7 +13,12 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int
-    
+
+    # Email (Brevo)
+    BREVO_EMAIL_SENDER_API_KEY: str
+    EMAIL_SENDER_NAME: str = "Life Tracker"
+    EMAIL_SENDER_EMAIL: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
