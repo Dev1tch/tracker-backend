@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     BREVO_EMAIL_SENDER_API_KEY: str
     EMAIL_SENDER_NAME: str = "Life Tracker"
     EMAIL_SENDER_EMAIL: str
+    ADMIN_NOTIFICATION_EMAIL: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -51,4 +51,5 @@ class ServiceProvider:
             email_sender=ServiceProvider.get_email_sender(),
             sender_name=settings.EMAIL_SENDER_NAME,
             sender_email=settings.EMAIL_SENDER_EMAIL,
+            admin_notification_email=settings.ADMIN_NOTIFICATION_EMAIL,
         )

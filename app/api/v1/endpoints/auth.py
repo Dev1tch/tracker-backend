@@ -34,6 +34,11 @@ def signup(
             recipient_email=created["email"],
             first_name=created.get("first_name"),
         )
+        background_tasks.add_task(
+            notifications.send_signup_notification,
+            user_email=created["email"],
+            first_name=created.get("first_name"),
+        )
 
     return created
 
