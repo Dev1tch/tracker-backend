@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 
 from app.api.deps import get_current_user
 from app.core.service_provider import ServiceProvider
@@ -24,18 +23,7 @@ def update_board_document(
     current_user: User = Depends(get_current_user),
     board_service: BoardService = Depends(ServiceProvider.get_board_service),
 ):
-    outcome, document = board_service.update(
-        current_user.id, payload.state, payload.base_version
-    )
-    if outcome == "conflict":
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
-                "status": "conflict",
-                "detail": "Document version is out of date.",
-                "document": _serialize(document),
-            },
-        )
+    document = board_service.update(current_user.id, payload.state)
     if not document:
         raise HTTPException(status_code=500, detail="Failed to persist board document.")
     return _serialize(document)

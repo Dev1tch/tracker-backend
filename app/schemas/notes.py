@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -17,10 +17,6 @@ class NotesDocument(BaseModel):
 
 class NotesUpdate(BaseModel):
     tree: Any
-    base_version: int
-
-
-class NotesConflict(BaseModel):
-    status: str = "conflict"
-    detail: str = "Document version is out of date."
-    document: NotesDocument
+    # base_version is accepted but ignored. Kept optional so older clients
+    # in the wild don't get 422s while their bundle is still cached.
+    base_version: Optional[int] = None

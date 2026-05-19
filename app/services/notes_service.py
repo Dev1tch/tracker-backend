@@ -31,15 +31,11 @@ class NotesService:
         retry = self.db.read(self.table_name, filters={"user_id": str(user_id)})
         return retry.data[0] if retry.data else seed
 
-    def update(
-        self, user_id: UUID, tree: Any, base_version: int
-    ) -> tuple[str, Optional[dict]]:
-        """Returns ("ok", doc) on success or ("conflict", current_doc) on
-        version mismatch. Caller maps conflict to a 409."""
+    def update(self, user_id: UUID, tree: Any) -> Optional[dict]:
+        """Unconditionally overwrite the user's notes document. Bumps
+        ``version`` (kept for ordering/debug; clients no longer base writes
+        on it) and ``updated_at`` to now."""
         current = self.get_or_create(user_id)
-        if int(current.get("version", 0)) != int(base_version):
-            return "conflict", current
-
         next_version = int(current.get("version", 0)) + 1
         updated = self.db.update(
             self.table_name,
@@ -51,8 +47,6 @@ class NotesService:
             },
         )
         if updated.data:
-            return "ok", updated.data[0]
-
-        # Defensive: re-read to return the persisted row.
+            return updated.data[0]
         retry = self.db.read(self.table_name, filters={"user_id": str(user_id)})
-        return ("ok", retry.data[0]) if retry.data else ("ok", current)
+        return retry.data[0] if retry.data else current

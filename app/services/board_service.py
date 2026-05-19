@@ -38,13 +38,10 @@ class BoardService:
         retry = self.db.read(self.table_name, filters={"user_id": str(user_id)})
         return retry.data[0] if retry.data else seed
 
-    def update(
-        self, user_id: UUID, state: Any, base_version: int
-    ) -> tuple[str, Optional[dict]]:
+    def update(self, user_id: UUID, state: Any) -> Optional[dict]:
+        """Unconditional overwrite — clients are no longer expected to send a
+        base_version (kept for ordering only)."""
         current = self.get_or_create(user_id)
-        if int(current.get("version", 0)) != int(base_version):
-            return "conflict", current
-
         next_version = int(current.get("version", 0)) + 1
         updated = self.db.update(
             self.table_name,
@@ -56,6 +53,6 @@ class BoardService:
             },
         )
         if updated.data:
-            return "ok", updated.data[0]
+            return updated.data[0]
         retry = self.db.read(self.table_name, filters={"user_id": str(user_id)})
-        return ("ok", retry.data[0]) if retry.data else ("ok", current)
+        return retry.data[0] if retry.data else current

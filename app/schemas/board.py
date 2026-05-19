@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -17,10 +17,5 @@ class BoardDocument(BaseModel):
 
 class BoardUpdate(BaseModel):
     state: Any
-    base_version: int
-
-
-class BoardConflict(BaseModel):
-    status: str = "conflict"
-    detail: str = "Document version is out of date."
-    document: BoardDocument
+    # Accepted-but-ignored (kept for backward compat with cached clients).
+    base_version: Optional[int] = None
