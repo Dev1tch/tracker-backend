@@ -47,6 +47,7 @@ class TaskType(TaskTypeBase):
 class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
+    project_id: Optional[UUID] = None
     task_type_id: Optional[UUID] = None
     parent_task_id: Optional[UUID] = None
     status: TaskOrganizationStatus = TaskOrganizationStatus.TO_DO
@@ -62,6 +63,7 @@ class TaskCreate(TaskBase):
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    project_id: Optional[UUID] = None
     task_type_id: Optional[UUID] = None
     parent_task_id: Optional[UUID] = None
     status: Optional[TaskOrganizationStatus] = None

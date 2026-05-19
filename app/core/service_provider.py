@@ -4,6 +4,8 @@ from app.services.category_service import CategoryService
 from app.services.email import BrevoEmailSender, EmailSender
 from app.services.habit_service import HabitService
 from app.services.log_service import LogService
+from app.services.project_notification_service import ProjectNotificationService
+from app.services.project_service import ProjectService
 from app.services.task_service import TaskService
 from app.services.user_notification_service import UserNotificationService
 from app.services.user_service import UserService
@@ -38,6 +40,10 @@ class ServiceProvider:
         return TaskService(ServiceProvider.get_supabase_client())
 
     @staticmethod
+    def get_project_service() -> ProjectService:
+        return ProjectService(ServiceProvider.get_supabase_client())
+
+    @staticmethod
     def get_user_service() -> UserService:
         return UserService(ServiceProvider.get_supabase_client())
 
@@ -52,4 +58,13 @@ class ServiceProvider:
             sender_name=settings.EMAIL_SENDER_NAME,
             sender_email=settings.EMAIL_SENDER_EMAIL,
             admin_notification_email=settings.ADMIN_NOTIFICATION_EMAIL,
+        )
+
+    @staticmethod
+    def get_project_notification_service() -> ProjectNotificationService:
+        return ProjectNotificationService(
+            email_sender=ServiceProvider.get_email_sender(),
+            sender_name=settings.EMAIL_SENDER_NAME,
+            sender_email=settings.EMAIL_SENDER_EMAIL,
+            app_url=settings.FRONTEND_APP_URL,
         )

@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     EMAIL_SENDER_NAME: str = "Life Tracker"
     EMAIL_SENDER_EMAIL: str
     ADMIN_NOTIFICATION_EMAIL: Optional[str] = None
+    FRONTEND_APP_URL: str = "https://tracker-six-gules.vercel.app"
 
     model_config = SettingsConfigDict(
         env_file=".env",
