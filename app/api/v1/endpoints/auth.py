@@ -1,9 +1,11 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
+from uuid import UUID
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.core.service_provider import ServiceProvider
+from app.services.project_service import ProjectService
 from app.services.user_notification_service import UserNotificationService
 from app.services.user_service import UserService
 from app.schemas.user import User, UserCreate, Token, UserLogin
@@ -15,6 +17,7 @@ def signup(
     user_in: UserCreate,
     background_tasks: BackgroundTasks,
     user_service: UserService = Depends(ServiceProvider.get_user_service),
+    project_service: ProjectService = Depends(ServiceProvider.get_project_service),
     notifications: UserNotificationService = Depends(
         ServiceProvider.get_user_notification_service
     ),
@@ -29,6 +32,10 @@ def signup(
     created = user_service.create(user_in)
 
     if created:
+        project_service.accept_pending_invitations_for_user(
+            user_id=UUID(created["id"]),
+            email=created["email"],
+        )
         background_tasks.add_task(
             notifications.send_welcome_email,
             recipient_email=created["email"],

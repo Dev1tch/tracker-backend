@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.deps import get_current_user
 from app.core.service_provider import ServiceProvider
@@ -21,10 +21,14 @@ router = APIRouter()
 
 @router.get("/", response_model=list[Task], status_code=status.HTTP_200_OK)
 def get_all_tasks(
+    project_id: UUID | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     task_service: TaskService = Depends(ServiceProvider.get_task_service),
 ):
-    return task_service.get_all(current_user.id)
+    data = task_service.get_all(current_user.id, project_id=project_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return data
 
 
 @router.post("/", response_model=Task, status_code=status.HTTP_201_CREATED)
