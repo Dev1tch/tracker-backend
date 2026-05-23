@@ -17,5 +17,5 @@ class BoardDocument(BaseModel):
 
 class BoardUpdate(BaseModel):
     state: Any
-    # Accepted-but-ignored (kept for backward compat with cached clients).
     base_version: Optional[int] = None
+    allow_empty_overwrite: bool = False
