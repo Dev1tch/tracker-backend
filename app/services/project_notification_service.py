@@ -36,7 +36,7 @@ class ProjectNotificationService:
     ) -> None:
         display_inviter = (inviter_name or "A teammate").strip() or "A teammate"
         project_title = project_name.strip() or "a project"
-        project_url = f"{self._app_url}/tasks"
+        project_url = f"{self._app_url}/?tab=tasks"
 
         html_content = (
             _load_template(_PROJECT_INVITE_TEMPLATE_PATH)
