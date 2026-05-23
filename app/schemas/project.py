@@ -14,6 +14,7 @@ class ProjectMemberRole(str, Enum):
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
+    color: str = "#6ea8fe"
 
 
 class ProjectCreate(ProjectBase):
@@ -23,6 +24,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    color: Optional[str] = None
 
 
 class Project(ProjectBase):
@@ -39,6 +41,9 @@ class ProjectMember(BaseModel):
     id: UUID
     project_id: UUID
     user_id: UUID
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
     role: ProjectMemberRole
     invited_by_user_id: Optional[UUID] = None
     joined_at: datetime

@@ -114,7 +114,28 @@ class ProjectService:
             filters={"project_id": str(project_id)},
             order="created_at.asc",
         )
-        return response.data
+        members = response.data
+        if not members:
+            return []
+
+        user_ids = [member["user_id"] for member in members]
+        users_response = (
+            self.db.table(self.user_table)
+            .select("id,email,first_name,last_name")
+            .in_("id", user_ids)
+            .execute()
+        )
+        users_by_id = {user["id"]: user for user in users_response.data}
+
+        return [
+            {
+                **member,
+                "email": users_by_id.get(member["user_id"], {}).get("email"),
+                "first_name": users_by_id.get(member["user_id"], {}).get("first_name"),
+                "last_name": users_by_id.get(member["user_id"], {}).get("last_name"),
+            }
+            for member in members
+        ]
 
     def invite_by_email(
         self, inviter_id: UUID, project_id: UUID, email: str

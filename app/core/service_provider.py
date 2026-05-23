@@ -1,9 +1,12 @@
 from app.core.config import settings
 from app.core.supabase_client import SupabaseClient
+from app.services.board_service import BoardService
 from app.services.category_service import CategoryService
 from app.services.email import BrevoEmailSender, EmailSender
 from app.services.habit_service import HabitService
 from app.services.log_service import LogService
+from app.services.media_service import MediaService
+from app.services.notes_service import NotesService
 from app.services.project_notification_service import ProjectNotificationService
 from app.services.project_service import ProjectService
 from app.services.task_service import TaskService
@@ -42,6 +45,18 @@ class ServiceProvider:
     @staticmethod
     def get_project_service() -> ProjectService:
         return ProjectService(ServiceProvider.get_supabase_client())
+
+    @staticmethod
+    def get_notes_service() -> NotesService:
+        return NotesService(ServiceProvider.get_supabase_client())
+
+    @staticmethod
+    def get_board_service() -> BoardService:
+        return BoardService(ServiceProvider.get_supabase_client())
+
+    @staticmethod
+    def get_media_service() -> MediaService:
+        return MediaService(ServiceProvider.get_supabase_client())
 
     @staticmethod
     def get_user_service() -> UserService:
