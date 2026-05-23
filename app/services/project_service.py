@@ -15,6 +15,7 @@ class ProjectService:
         self.member_table = "task_project_users"
         self.invitation_table = "task_project_invitations"
         self.user_table = "users"
+        self.task_table = "tasks"
 
     def _now_iso(self) -> str:
         return datetime.utcnow().isoformat()
@@ -120,6 +121,15 @@ class ProjectService:
         member = response.data[0] if response.data else None
         if not member or member["role"] == ProjectMemberRole.OWNER.value:
             return False
+
+        self.db.update(
+            self.task_table,
+            filters={
+                "project_id": str(project_id),
+                "assignee_user_id": member["user_id"],
+            },
+            data={"assignee_user_id": str(user_id), "updated_at": self._now_iso()},
+        )
 
         delete_response = self.db.delete(
             self.member_table,

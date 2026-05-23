@@ -53,12 +53,24 @@ class TaskService:
         return task
 
     def _can_access_project(self, user_id: UUID, project_id: str) -> bool:
+        return self._is_project_member(project_id, str(user_id))
+
+    def _is_project_member(self, project_id: str, user_id: str) -> bool:
         response = self.db.read(
             self.project_member_table,
-            filters={"project_id": project_id, "user_id": str(user_id)},
+            filters={"project_id": project_id, "user_id": user_id},
             limit=1,
         )
         return bool(response.data)
+
+    def _has_valid_project_assignee(
+        self, project_id: Optional[str], assignee_user_id: Optional[str]
+    ) -> bool:
+        if not project_id:
+            return True
+        if not assignee_user_id:
+            return False
+        return self._is_project_member(project_id, assignee_user_id)
 
     def _can_access_task(self, user_id: UUID, task: dict) -> bool:
         if task.get("user_id") == str(user_id):
@@ -202,6 +214,8 @@ class TaskService:
         project_id = data.get("project_id")
         if project_id and not self._can_access_project(user_id, project_id):
             return None
+        if not self._has_valid_project_assignee(project_id, data.get("assignee_user_id")):
+            return None
 
         parent_task_id = data.get("parent_task_id")
         if parent_task_id and not self._set_parent_on_create_or_move(
@@ -229,10 +243,15 @@ class TaskService:
         old_parent_task_id = current.get("parent_task_id")
         new_parent_task_id = data.get("parent_task_id", old_parent_task_id)
         new_project_id = data.get("project_id", current.get("project_id"))
+        new_assignee_user_id = data.get(
+            "assignee_user_id", current.get("assignee_user_id")
+        )
 
         if "project_id" in data and new_project_id:
             if not self._can_access_project(user_id, new_project_id):
                 return None
+        if not self._has_valid_project_assignee(new_project_id, new_assignee_user_id):
+            return None
 
         if "project_id" in data and new_parent_task_id:
             if not self._set_parent_on_create_or_move(
