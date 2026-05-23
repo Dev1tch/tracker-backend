@@ -40,6 +40,7 @@ The API will be available at `http://localhost:8000`.
 
 ### With Vercel CLI
 If you have the Vercel CLI installed:
+
 ```bash
 vercel dev
 ```
