@@ -30,6 +30,10 @@ class ProjectService:
     def user_can_access(self, user_id: UUID, project_id: UUID) -> bool:
         return bool(self._get_membership(user_id, project_id))
 
+    def user_is_owner(self, user_id: UUID, project_id: UUID) -> bool:
+        membership = self._get_membership(user_id, project_id)
+        return bool(membership and membership["role"] == ProjectMemberRole.OWNER.value)
+
     def get_user_project_ids(self, user_id: UUID) -> list[str]:
         response = self.db.read(
             self.member_table,
@@ -98,12 +102,30 @@ class ProjectService:
         return response.data[0] if response.data else None
 
     def delete(self, user_id: UUID, project_id: UUID) -> bool:
-        membership = self._get_membership(user_id, project_id)
-        if not membership or membership["role"] != ProjectMemberRole.OWNER.value:
+        if not self.user_is_owner(user_id, project_id):
             return False
 
         response = self.db.delete(self.table_name, filters={"id": str(project_id)})
         return bool(response.data)
+
+    def remove_member(self, user_id: UUID, project_id: UUID, member_id: UUID) -> bool:
+        if not self.user_is_owner(user_id, project_id):
+            return False
+
+        response = self.db.read(
+            self.member_table,
+            filters={"id": str(member_id), "project_id": str(project_id)},
+            limit=1,
+        )
+        member = response.data[0] if response.data else None
+        if not member or member["role"] == ProjectMemberRole.OWNER.value:
+            return False
+
+        delete_response = self.db.delete(
+            self.member_table,
+            filters={"id": str(member_id), "project_id": str(project_id)},
+        )
+        return bool(delete_response.data)
 
     def get_members(self, user_id: UUID, project_id: UUID) -> Optional[list[dict]]:
         if not self.user_can_access(user_id, project_id):
@@ -140,7 +162,15 @@ class ProjectService:
     def invite_by_email(
         self, inviter_id: UUID, project_id: UUID, email: str
     ) -> Optional[dict]:
-        project = self.get_by_id(inviter_id, project_id)
+        if not self.user_is_owner(inviter_id, project_id):
+            return None
+
+        project_response = self.db.read(
+            self.table_name,
+            filters={"id": str(project_id)},
+            limit=1,
+        )
+        project = project_response.data[0] if project_response.data else None
         if not project:
             return None
 

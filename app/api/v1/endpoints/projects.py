@@ -117,6 +117,22 @@ def get_project_members(
     return data
 
 
+@router.delete(
+    "/{project_id}/members/{member_id}",
+    status_code=status.HTTP_200_OK,
+)
+def remove_project_member(
+    project_id: UUID,
+    member_id: UUID,
+    current_user: User = Depends(get_current_user),
+    project_service: ProjectService = Depends(ServiceProvider.get_project_service),
+):
+    success = project_service.remove_member(current_user.id, project_id, member_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project member not found")
+    return {"status": "success"}
+
+
 @router.post(
     "/{project_id}/invite",
     response_model=ProjectInviteResponse,
