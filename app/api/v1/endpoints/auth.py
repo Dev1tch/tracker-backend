@@ -14,7 +14,7 @@ from app.core.supabase_client import SupabaseClient
 from app.services.project_service import ProjectService
 from app.services.user_notification_service import UserNotificationService
 from app.services.user_service import UserService
-from app.schemas.user import User, UserCreate, Token, UserLogin
+from app.schemas.user import User, UserCreate, Token
 
 router = APIRouter()
 
@@ -65,9 +65,7 @@ def login(
     # Per-account throttle (complements the per-IP limit on the route) to blunt
     # credential stuffing that rotates source IPs against one account.
     enforce_login_email_limit(db, form_data.username)
-    user = user_service.authenticate(
-        UserLogin(email=form_data.username, password=form_data.password)
-    )
+    user = user_service.authenticate(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
 
