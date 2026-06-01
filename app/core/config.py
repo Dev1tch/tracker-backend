@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    # Rate limiting (per-IP fixed window, backed by the check_rate_limit RPC)
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_GLOBAL_PER_MIN: int = 120
+    RATE_LIMIT_LOGIN_PER_MIN: int = 5
+    RATE_LIMIT_SIGNUP_PER_MIN: int = 5
+
     # Email (Brevo)
     BREVO_EMAIL_SENDER_API_KEY: str
     EMAIL_SENDER_NAME: str = "Life Tracker"

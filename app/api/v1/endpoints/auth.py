@@ -3,8 +3,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from uuid import UUID
 from app.core.config import settings
+from app.core.rate_limit import (
+    enforce_login_email_limit,
+    login_rate_limit,
+    signup_rate_limit,
+)
 from app.core.security import create_access_token
 from app.core.service_provider import ServiceProvider
+from app.core.supabase_client import SupabaseClient
 from app.services.project_service import ProjectService
 from app.services.user_notification_service import UserNotificationService
 from app.services.user_service import UserService
@@ -12,7 +18,7 @@ from app.schemas.user import User, UserCreate, Token, UserLogin
 
 router = APIRouter()
 
-@router.post("/signup", response_model=User)
+@router.post("/signup", response_model=User, dependencies=[Depends(signup_rate_limit)])
 def signup(
     user_in: UserCreate,
     background_tasks: BackgroundTasks,
@@ -49,12 +55,16 @@ def signup(
 
     return created
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, dependencies=[Depends(login_rate_limit)])
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    user_service: UserService = Depends(ServiceProvider.get_user_service)
+    user_service: UserService = Depends(ServiceProvider.get_user_service),
+    db: SupabaseClient = Depends(ServiceProvider.get_supabase_client),
 ):
     """OAuth2 compatible token login, get an access token for future requests."""
+    # Per-account throttle (complements the per-IP limit on the route) to blunt
+    # credential stuffing that rotates source IPs against one account.
+    enforce_login_email_limit(db, form_data.username)
     user = user_service.authenticate(
         UserLogin(email=form_data.username, password=form_data.password)
     )
