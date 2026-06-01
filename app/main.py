@@ -1,12 +1,38 @@
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.rate_limit import global_rate_limit
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+# Only publish docs/OpenAPI when explicitly enabled (see DOCS_ENABLED).
+_docs = (
+    {
+        "docs_url": "/docs",
+        "redoc_url": "/redoc",
+        "openapi_url": f"{settings.API_V1_STR}/openapi.json",
+    }
+    if settings.DOCS_ENABLED
+    else {"docs_url": None, "redoc_url": None, "openapi_url": None}
 )
+
+app = FastAPI(title=settings.PROJECT_NAME, **_docs)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # The API serves JSON; a strict CSP locks down any HTML a browser might
+    # render from a response. Skip it for the Swagger/ReDoc UI (when enabled),
+    # which loads CDN assets.
+    path = request.url.path
+    if not (path in ("/docs", "/redoc") or path.endswith("/openapi.json")):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+        )
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,

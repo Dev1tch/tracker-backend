@@ -4,7 +4,12 @@ from typing import Optional
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Tracker Backend"
     API_V1_STR: str = "/api/v1"
-    
+
+    # Expose interactive docs + OpenAPI schema. Default off so production
+    # doesn't publish its full API surface; set DOCS_ENABLED=true in a local
+    # .env for Swagger UI (leave it unset in Vercel).
+    DOCS_ENABLED: bool = False
+
     # Supabase
     SUPABASE_URL: str
     SUPABASE_KEY: str
